@@ -4,8 +4,8 @@ const { Sequelize } = require('sequelize');
 const { sequelize } = require('../services/db');
 const { User } = require('./User');
 
-const Notification = sequelize.define(
-  'notification',
+const GamificationSettings = sequelize.define(
+  'gamification_settings',
   {
     id: {
       type: Sequelize.UUID,
@@ -15,45 +15,50 @@ const Notification = sequelize.define(
     user_id: {
       type: Sequelize.UUID,
       allowNull: false,
+      unique: true,
       references: {
         model: User,
         key: 'id',
       },
     },
-    channel: {
-      type: Sequelize.STRING(20),
+    badges_enabled: {
+      type: Sequelize.BOOLEAN,
       allowNull: false,
-      validate: {
-        isIn: [['whatsapp']],
-      },
+      defaultValue: true,
     },
-    message: {
-      type: Sequelize.TEXT,
+    streaks_enabled: {
+      type: Sequelize.BOOLEAN,
       allowNull: false,
+      defaultValue: true,
     },
-    sent_at: {
+    notifications_enabled: {
+      type: Sequelize.BOOLEAN,
+      allowNull: false,
+      defaultValue: true,
+    },
+    created_at: {
       type: Sequelize.DATE,
       allowNull: false,
       defaultValue: Sequelize.NOW,
     },
   },
   {
-    tableName: 'notifications',
+    tableName: 'gamification_settings',
     timestamps: false,
   },
 );
 
-Notification.belongsTo(User, {
+GamificationSettings.belongsTo(User, {
   foreignKey: 'user_id',
   onDelete: 'CASCADE',
   onUpdate: 'CASCADE',
 });
-User.hasMany(Notification, {
+User.hasOne(GamificationSettings, {
   foreignKey: 'user_id',
   onDelete: 'CASCADE',
   onUpdate: 'CASCADE',
 });
 
 module.exports = {
-  Notification,
+  GamificationSettings,
 };

@@ -1,7 +1,7 @@
 const roles = {
   ADMIN: 'admin',
-  STAFF: 'staff',
-  IOT: 'iot',
+  TEACHER: 'teacher',
+  STUDENT: 'student',
 };
 
 module.exports = {

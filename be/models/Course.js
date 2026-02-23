@@ -4,15 +4,15 @@ const { Sequelize } = require('sequelize');
 const { sequelize } = require('../services/db');
 const { User } = require('./User');
 
-const Notification = sequelize.define(
-  'notification',
+const Course = sequelize.define(
+  'course',
   {
     id: {
       type: Sequelize.UUID,
       defaultValue: Sequelize.UUIDV4,
       primaryKey: true,
     },
-    user_id: {
+    teacher_id: {
       type: Sequelize.UUID,
       allowNull: false,
       references: {
@@ -20,40 +20,42 @@ const Notification = sequelize.define(
         key: 'id',
       },
     },
-    channel: {
-      type: Sequelize.STRING(20),
+    title: {
+      type: Sequelize.STRING(255),
       allowNull: false,
-      validate: {
-        isIn: [['whatsapp']],
-      },
     },
-    message: {
+    description: {
       type: Sequelize.TEXT,
-      allowNull: false,
+      allowNull: true,
     },
-    sent_at: {
+    is_published: {
+      type: Sequelize.BOOLEAN,
+      allowNull: false,
+      defaultValue: false,
+    },
+    created_at: {
       type: Sequelize.DATE,
       allowNull: false,
       defaultValue: Sequelize.NOW,
     },
   },
   {
-    tableName: 'notifications',
+    tableName: 'courses',
     timestamps: false,
   },
 );
 
-Notification.belongsTo(User, {
-  foreignKey: 'user_id',
-  onDelete: 'CASCADE',
+Course.belongsTo(User, {
+  foreignKey: 'teacher_id',
+  onDelete: 'RESTRICT',
   onUpdate: 'CASCADE',
 });
-User.hasMany(Notification, {
-  foreignKey: 'user_id',
-  onDelete: 'CASCADE',
+User.hasMany(Course, {
+  foreignKey: 'teacher_id',
+  onDelete: 'RESTRICT',
   onUpdate: 'CASCADE',
 });
 
 module.exports = {
-  Notification,
+  Course,
 };

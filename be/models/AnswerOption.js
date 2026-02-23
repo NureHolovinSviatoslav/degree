@@ -2,58 +2,51 @@
 
 const { Sequelize } = require('sequelize');
 const { sequelize } = require('../services/db');
-const { User } = require('./User');
+const { TestQuestion } = require('./TestQuestion');
 
-const Notification = sequelize.define(
-  'notification',
+const AnswerOption = sequelize.define(
+  'answer_option',
   {
     id: {
       type: Sequelize.UUID,
       defaultValue: Sequelize.UUIDV4,
       primaryKey: true,
     },
-    user_id: {
+    question_id: {
       type: Sequelize.UUID,
       allowNull: false,
       references: {
-        model: User,
+        model: TestQuestion,
         key: 'id',
       },
     },
-    channel: {
-      type: Sequelize.STRING(20),
-      allowNull: false,
-      validate: {
-        isIn: [['whatsapp']],
-      },
-    },
-    message: {
-      type: Sequelize.TEXT,
+    option_text: {
+      type: Sequelize.STRING(500),
       allowNull: false,
     },
-    sent_at: {
-      type: Sequelize.DATE,
+    is_correct: {
+      type: Sequelize.BOOLEAN,
       allowNull: false,
-      defaultValue: Sequelize.NOW,
+      defaultValue: false,
     },
   },
   {
-    tableName: 'notifications',
+    tableName: 'answer_options',
     timestamps: false,
   },
 );
 
-Notification.belongsTo(User, {
-  foreignKey: 'user_id',
+AnswerOption.belongsTo(TestQuestion, {
+  foreignKey: 'question_id',
   onDelete: 'CASCADE',
   onUpdate: 'CASCADE',
 });
-User.hasMany(Notification, {
-  foreignKey: 'user_id',
+TestQuestion.hasMany(AnswerOption, {
+  foreignKey: 'question_id',
   onDelete: 'CASCADE',
   onUpdate: 'CASCADE',
 });
 
 module.exports = {
-  Notification,
+  AnswerOption,
 };

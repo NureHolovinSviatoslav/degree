@@ -2,58 +2,46 @@
 
 const { Sequelize } = require('sequelize');
 const { sequelize } = require('../services/db');
-const { User } = require('./User');
+const { Lesson } = require('./Lesson');
 
-const Notification = sequelize.define(
-  'notification',
+const TestQuestion = sequelize.define(
+  'test_question',
   {
     id: {
       type: Sequelize.UUID,
       defaultValue: Sequelize.UUIDV4,
       primaryKey: true,
     },
-    user_id: {
+    lesson_id: {
       type: Sequelize.UUID,
       allowNull: false,
       references: {
-        model: User,
+        model: Lesson,
         key: 'id',
       },
     },
-    channel: {
-      type: Sequelize.STRING(20),
-      allowNull: false,
-      validate: {
-        isIn: [['whatsapp']],
-      },
-    },
-    message: {
+    question_text: {
       type: Sequelize.TEXT,
       allowNull: false,
     },
-    sent_at: {
-      type: Sequelize.DATE,
-      allowNull: false,
-      defaultValue: Sequelize.NOW,
-    },
   },
   {
-    tableName: 'notifications',
+    tableName: 'test_questions',
     timestamps: false,
   },
 );
 
-Notification.belongsTo(User, {
-  foreignKey: 'user_id',
+TestQuestion.belongsTo(Lesson, {
+  foreignKey: 'lesson_id',
   onDelete: 'CASCADE',
   onUpdate: 'CASCADE',
 });
-User.hasMany(Notification, {
-  foreignKey: 'user_id',
+Lesson.hasMany(TestQuestion, {
+  foreignKey: 'lesson_id',
   onDelete: 'CASCADE',
   onUpdate: 'CASCADE',
 });
 
 module.exports = {
-  Notification,
+  TestQuestion,
 };
