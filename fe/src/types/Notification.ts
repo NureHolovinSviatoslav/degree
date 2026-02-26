@@ -1,8 +1,7 @@
 export type Notification = {
-  notification_id: string;
-  notified_username: string | null;
-  phone: string;
-  sent_at: Date;
+  id: string;
+  user_id: string;
+  channel: "whatsapp";
   message: string;
-  notification_type: string;
+  sent_at?: string;
 };

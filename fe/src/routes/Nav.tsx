@@ -1,164 +1,155 @@
-import { Button, ButtonGroup } from "@mui/material";
-import { Link } from "react-router-dom";
-import ACLWrapper from "../components/ACLWrapper";
-import { ACL } from "../utils/ACL";
+import { useContext } from "react";
+import { Link, useLocation } from "react-router-dom";
+import {
+  Home,
+  Users,
+  BookOpen,
+  GraduationCap,
+  HelpCircle,
+  ListChecks,
+  ClipboardList,
+  BarChart3,
+  Award,
+  Trophy,
+  Flame,
+  Settings,
+  Bell,
+} from "lucide-react";
+
+import { CurrentUserContext } from "../App";
 import { UserRole } from "../types/User";
+import { cn } from "../lib/utils";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "../components/ui/tooltip";
+import { Avatar, AvatarFallback } from "../components/ui/avatar";
+import { Separator } from "../components/ui/separator";
+
+const NAV_ITEMS = [
+  { to: "/", icon: Home, label: "Головна", roles: null },
+  { to: "/users", icon: Users, label: "Користувачі", roles: [UserRole.Admin] },
+  { to: "/courses", icon: BookOpen, label: "Курси", roles: [UserRole.Admin] },
+  {
+    to: "/lessons",
+    icon: GraduationCap,
+    label: "Уроки",
+    roles: [UserRole.Admin],
+  },
+  {
+    to: "/test-questions",
+    icon: HelpCircle,
+    label: "Тестові питання",
+    roles: [UserRole.Admin],
+  },
+  {
+    to: "/answer-options",
+    icon: ListChecks,
+    label: "Варіанти відповідей",
+    roles: [UserRole.Admin],
+  },
+  {
+    to: "/enrollments",
+    icon: ClipboardList,
+    label: "Записи на курси",
+    roles: [UserRole.Admin],
+  },
+  {
+    to: "/lesson-progress",
+    icon: BarChart3,
+    label: "Прогрес уроків",
+    roles: [UserRole.Admin],
+  },
+  { to: "/badges", icon: Award, label: "Бейджі", roles: [UserRole.Admin] },
+  {
+    to: "/user-badges",
+    icon: Trophy,
+    label: "Бейджі користувачів",
+    roles: [UserRole.Admin],
+  },
+  {
+    to: "/activity-streaks",
+    icon: Flame,
+    label: "Серії активності",
+    roles: [UserRole.Admin],
+  },
+  {
+    to: "/gamification-settings",
+    icon: Settings,
+    label: "Налаштування гейміфікації",
+    roles: [UserRole.Admin],
+  },
+  {
+    to: "/notifications",
+    icon: Bell,
+    label: "Сповіщення",
+    roles: [UserRole.Admin],
+  },
+] as const;
 
 export const Nav = () => {
+  const user = useContext(CurrentUserContext);
+  const location = useLocation();
+
+  const initials = user.name
+    ? user.name
+        .split(" ")
+        .map((w) => w[0])
+        .join("")
+        .toUpperCase()
+        .slice(0, 2)
+    : "?";
+
+  const visibleItems = NAV_ITEMS.filter(
+    (item) =>
+      item.roles === null ||
+      (user.role && (item.roles as readonly UserRole[]).includes(user.role)),
+  );
+
   return (
-    <div
-      style={{
-        marginBottom: "35px",
-      }}
-    >
-      <div className="nav">
-        <div
-          style={{
-            display: "flex",
-            justifyContent: "space-between",
-            padding: ".5rem",
-          }}
-        >
-          <div
-            style={{
-              display: "grid",
-              gridTemplateColumns: "auto 1fr",
-              gridTemplateRows: "auto auto",
-              gap: "0.5rem 1rem",
-              alignItems: "center",
-            }}
-          >
-            <p
-              style={{
-                fontSize: "1.2rem",
-                fontWeight: "bold",
-                margin: ".5rem",
-              }}
-            >
-              <ACLWrapper
-                fallback={<>&nbsp;</>}
-                allowedRoles={[UserRole.Admin, UserRole.Staff]}
-              >
-                Перегляд:
-              </ACLWrapper>
-            </p>
-            <div style={{ height: "auto" }}>
-              <ButtonGroup variant="contained">
-                <ACLWrapper fallback={null} {...ACL.users}>
-                  <Link to="/users">
-                    <Button>Користувачі</Button>
-                  </Link>
-                </ACLWrapper>
+    <aside className="flex h-screen w-16 flex-col items-center border-r bg-card py-3">
+      <Tooltip>
+        <TooltipTrigger asChild>
+          <Link to="/profile">
+            <Avatar className="h-9 w-9 cursor-pointer transition-opacity hover:opacity-80">
+              <AvatarFallback className="bg-primary text-xs text-primary-foreground">
+                {initials}
+              </AvatarFallback>
+            </Avatar>
+          </Link>
+        </TooltipTrigger>
+        <TooltipContent side="right">Профіль</TooltipContent>
+      </Tooltip>
 
-                <ACLWrapper fallback={null} {...ACL.locations}>
-                  <Link to="/locations">
-                    <Button>Локації</Button>
-                  </Link>
-                </ACLWrapper>
+      <Separator className="my-3 w-8" />
 
-                <ACLWrapper fallback={null} {...ACL.locationItems}>
-                  <Link to="/location-items">
-                    <Button>Елементи локацій</Button>
-                  </Link>
-                </ACLWrapper>
-
-                <ACLWrapper fallback={null} {...ACL.vaccines}>
-                  <Link to="/vaccines">
-                    <Button>Вакцини</Button>
-                  </Link>
-                </ACLWrapper>
-
-                <ACLWrapper fallback={null} {...ACL.notifications}>
-                  <Link to="/notifications">
-                    <Button>Сповіщення</Button>
-                  </Link>
-                </ACLWrapper>
-
-                <ACLWrapper fallback={null} {...ACL.sensorData}>
-                  <Link to="/sensor-data">
-                    <Button>Дані датчиків</Button>
-                  </Link>
-                </ACLWrapper>
-              </ButtonGroup>
-            </div>
-
-            <ACLWrapper
-              fallback={
-                <>
-                  <p
-                    style={{
-                      fontSize: "1.2rem",
-                      fontWeight: "bold",
-                      margin: ".5rem",
-                    }}
-                  >
-                    &nbsp;
-                  </p>
-                  <div>&nbsp;</div>
-                </>
-              }
-              {...ACL.graphs}
-            >
-              <p
-                style={{
-                  fontSize: "1.2rem",
-                  fontWeight: "bold",
-                  margin: ".5rem",
-                }}
-              >
-                Графіки даних датчиків:
-              </p>
-              <div>
-                <ButtonGroup variant="contained">
-                  <Link to="/graphs/sensor-data/location">
-                    <Button>Для локацій</Button>
-                  </Link>
-                  <Link to="/graphs/sensor-data/vaccine">
-                    <Button>Для вакцин</Button>
-                  </Link>
-                </ButtonGroup>
-              </div>
-            </ACLWrapper>
-
-            <p
-              style={{
-                fontSize: "1.2rem",
-                fontWeight: "bold",
-                margin: ".5rem",
-              }}
-            >
-              &nbsp;
-            </p>
-            <div>&nbsp;</div>
-          </div>
-
-          <div
-            style={{
-              display: "flex",
-              gap: "0.5rem",
-              flexDirection: "column",
-            }}
-          >
-            <Link to="/">
-              <Button variant="contained" color="success">
-                Головна
-              </Button>
-            </Link>
-            <Link to="/profile">
-              <Button variant="contained" color="success">
-                Профіль
-              </Button>
-            </Link>
-          </div>
-        </div>
-
-        <div
-          style={{
-            border: "3px solid #ccc",
-            margin: "0.5rem 0 0 0 ",
-          }}
-        />
-      </div>
-    </div>
+      <nav className="flex flex-1 flex-col items-center gap-1 overflow-y-auto">
+        {visibleItems.map(({ to, icon: Icon, label }) => {
+          const active =
+            to === "/"
+              ? location.pathname === "/"
+              : location.pathname.startsWith(to);
+          return (
+            <Tooltip key={to}>
+              <TooltipTrigger asChild>
+                <Link
+                  to={to}
+                  className={cn(
+                    "flex h-9 w-9 items-center justify-center rounded-lg transition-colors",
+                    active
+                      ? "bg-primary text-primary-foreground"
+                      : "text-muted-foreground hover:bg-muted hover:text-foreground",
+                  )}
+                >
+                  <Icon className="h-5 w-5" />
+                </Link>
+              </TooltipTrigger>
+              <TooltipContent side="right">{label}</TooltipContent>
+            </Tooltip>
+          );
+        })}
+      </nav>
+    </aside>
   );
 };

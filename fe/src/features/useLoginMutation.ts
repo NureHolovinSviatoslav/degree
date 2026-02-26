@@ -1,5 +1,4 @@
 import { useMutation, useQueryClient } from "react-query";
-
 import { Login } from "../types/Login";
 import { fetchAbstract } from "../utils/fetchAbstract";
 import { CURRENT_USER_QUERY_KEY } from "./useCurrentUserQuery";
@@ -9,10 +8,14 @@ export const useLoginMutation = () => {
 
   return useMutation(
     async (data: Login) => {
-      const jwt = (
-        await fetchAbstract({ queryClient }, {}, "users/login", "POST", data)
-      ).accessToken;
-      localStorage.setItem("jwt", jwt);
+      const { accessToken } = await fetchAbstract(
+        { queryClient },
+        {},
+        "users/login",
+        "POST",
+        data,
+      );
+      localStorage.setItem("jwt", accessToken);
       return null;
     },
     {

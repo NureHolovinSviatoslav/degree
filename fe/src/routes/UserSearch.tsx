@@ -1,258 +1,173 @@
-import { Delete, Edit } from "@mui/icons-material";
-import {
-  Autocomplete,
-  Button,
-  FormControl,
-  IconButton,
-  TextField,
-} from "@mui/material";
-import { GridColDef } from "@mui/x-data-grid";
-import { useCallback, useEffect, useMemo, useState } from "react";
-import { Link, useSearchParams } from "react-router-dom";
+import { useMemo, useState } from "react";
+import { Link } from "react-router-dom";
+import { Plus, Eye, Pencil, Trash2, Search } from "lucide-react";
 
-import { useUserMutation } from "../features/useUserMutation";
+import { User, UserRole } from "../types/User";
 import { useUserQuery } from "../features/useUserQuery";
-import { getStyledDataGrid } from "../utils/getStyledDataGrid";
+import { useUserMutation } from "../features/useUserMutation";
+import { Button } from "../components/ui/button";
+import {
+  Card,
+  CardHeader,
+  CardTitle,
+  CardContent,
+} from "../components/ui/card";
+import { Input } from "../components/ui/input";
+import Loader from "../components/Loader";
 
-const StyledDataGrid = getStyledDataGrid();
+const ROLE_LABELS: Record<string, string> = {
+  admin: "Адміністратор",
+  teacher: "Викладач",
+  student: "Студент",
+};
 
 export const UserSearch = () => {
   const query = useUserQuery();
   const mutation = useUserMutation();
-  const [error, setError] = useState<string>("");
-  const [searchParams, setSearchParams] = useSearchParams();
+  const [error, setError] = useState("");
+  const [filterName, setFilterName] = useState("");
+  const [filterRole, setFilterRole] = useState("");
+  const [filterEmail, setFilterEmail] = useState("");
 
-  const param = useCallback(
-    (key: string) => {
-      const value = searchParams.get(key);
-      if (value === null) {
-        return "";
-      }
-      return value;
-    },
-    [searchParams],
-  );
-
-  const rows = useMemo(() => query.data ?? [], [query.data]);
-
-  const filteredRows = useMemo(() => {
-    const username = param("username").toLowerCase();
-    const role = param("role");
-    const phone = param("phone").toLowerCase();
-    return rows.filter((row) => {
-      const usernameOk =
-        !username || row.username.toLowerCase().includes(username);
-      const roleOk = !role || row.role === role;
-      const phoneOk = !phone || (row.phone ?? "").toLowerCase().includes(phone);
-      return usernameOk && roleOk && phoneOk;
+  const rows = useMemo(() => {
+    if (!query.data) return [];
+    return query.data.filter((u: User) => {
+      if (
+        filterName &&
+        !u.name.toLowerCase().includes(filterName.toLowerCase())
+      )
+        return false;
+      if (filterRole && u.role !== filterRole) return false;
+      if (
+        filterEmail &&
+        !u.email.toLowerCase().includes(filterEmail.toLowerCase())
+      )
+        return false;
+      return true;
     });
-  }, [param, rows]);
+  }, [query.data, filterName, filterRole, filterEmail]);
 
-  const columns = useMemo(() => {
-    return [
-      {
-        field: "username",
-        headerName: "Логін",
-        type: "string",
-        width: 200,
-        renderCell: (cellValues) => {
-          return (
-            <Link to={`/users/${cellValues.row.username}`} className="link">
-              {cellValues.value}
-            </Link>
-          );
-        },
-      },
-      {
-        field: "role",
-        headerName: "Роль",
-        type: "string",
-        width: 200,
-      },
-      {
-        field: "phone",
-        headerName: "Телефон",
-        type: "string",
-        renderCell: (cellValues) => {
-          return cellValues.value ? (
-            <a className="link" href={`tel:${cellValues.value}`}>
-              {cellValues.value}
-            </a>
-          ) : (
-            "-"
-          );
-        },
-        width: 300,
-      },
-      {
-        field: "actions",
-        headerName: "Дії",
-        sortable: false,
-        filterable: false,
-        disableColumnMenu: true,
-        width: 85,
-        renderCell: (cellValues) => {
-          return (
-            <>
-              <Link to={`/users/update/${cellValues.row.username}`}>
-                <IconButton aria-label="edit">
-                  <Edit />
-                </IconButton>
-              </Link>
-              <IconButton
-                aria-label="delete"
-                onClick={() => {
-                  setError("");
+  const handleDelete = (id: string) => {
+    if (!window.confirm("Ви впевнені, що хочете видалити?")) return;
+    mutation.mutate(
+      { type: "delete", data: { id } },
+      { onError: (err) => setError((err as Error).message) },
+    );
+  };
 
-                  const id = cellValues.row.username;
-
-                  const confirm = window.confirm(`Видалити користувача ${id}?`);
-
-                  if (!confirm) {
-                    return;
-                  }
-
-                  mutation
-                    .mutateAsync({
-                      type: "delete",
-                      data: { username: id },
-                    })
-                    .catch((error) => {
-                      setError(error.message);
-                    });
-                }}
-              >
-                <Delete />
-              </IconButton>
-            </>
-          ) as React.JSX.Element;
-        },
-      },
-    ] as GridColDef[];
-  }, [mutation]);
-
-  useEffect(() => {
-    if (query.isError) {
-      setError((query.error as Error)?.message);
-    }
-  }, [query.isError, query.error]);
-
-  const roleOptions = useMemo(
-    () => Array.from(new Set(rows.map((r) => r.role))).sort(),
-    [rows],
-  );
-
-  const updateParam = useCallback(
-    (key: string, value: string) => {
-      const next = new URLSearchParams(searchParams);
-      if (value) next.set(key, value);
-      else next.delete(key);
-      setSearchParams(next);
-    },
-    [searchParams, setSearchParams],
-  );
+  if (query.isLoading) return <Loader />;
 
   return (
-    <>
-      <div
-        style={{
-          marginBottom: "1rem",
-        }}
-      >
-        <div
-          style={{
-            display: "flex",
-            justifyContent: "space-between",
-            alignItems: "center",
-            marginBottom: ".25rem",
-          }}
-        >
-          {
-            <div style={{ color: "red" }}>
-              {error && <>{`Щось пішло не так: ${error}`}</>}
-            </div>
-          }
-
-          <Link to="/users/create">
-            <Button variant="contained" color="success">
-              Зареєструвати користувача
+    <div className="mx-auto max-w-5xl p-6">
+      {error && <p className="mb-4 text-sm text-red-500">{error}</p>}
+      <Card>
+        <CardHeader>
+          <div className="flex items-center justify-between">
+            <CardTitle>Користувачі</CardTitle>
+            <Button asChild size="sm">
+              <Link to="/users/create">
+                <Plus className="mr-1.5 h-4 w-4" />
+                Створити
+              </Link>
             </Button>
-          </Link>
-        </div>
-      </div>
+          </div>
+        </CardHeader>
+        <CardContent>
+          <div className="mb-4 grid grid-cols-1 gap-3 sm:grid-cols-3">
+            <div className="relative">
+              <Search className="absolute left-2.5 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground" />
+              <Input
+                placeholder="Ім'я"
+                value={filterName}
+                onChange={(e) => setFilterName(e.target.value)}
+                className="pl-8"
+              />
+            </div>
+            <select
+              value={filterRole}
+              onChange={(e) => setFilterRole(e.target.value)}
+              className="h-8 w-full rounded-lg border border-input bg-transparent px-2.5 py-1 text-sm outline-none focus-visible:border-ring focus-visible:ring-3 focus-visible:ring-ring/50"
+            >
+              <option value="">Всі ролі</option>
+              {Object.values(UserRole).map((r) => (
+                <option key={r} value={r}>
+                  {ROLE_LABELS[r] ?? r}
+                </option>
+              ))}
+            </select>
+            <Input
+              placeholder="Email"
+              value={filterEmail}
+              onChange={(e) => setFilterEmail(e.target.value)}
+            />
+          </div>
 
-      <div
-        style={{
-          display: "flex",
-          gap: 12,
-          flexWrap: "wrap",
-          alignItems: "center",
-          marginBottom: "1rem",
-        }}
-      >
-        <FormControl size="small" sx={{ minWidth: 200 }}>
-          <TextField
-            label="Логін"
-            size="small"
-            value={param("username")}
-            onChange={(e) => updateParam("username", e.target.value)}
-          />
-        </FormControl>
-
-        <FormControl size="small" sx={{ minWidth: 200 }}>
-          <Autocomplete
-            disablePortal
-            options={roleOptions}
-            value={param("role")}
-            onChange={(_, v) => updateParam("role", v ?? "")}
-            renderInput={(params) => (
-              <TextField {...params} label="Роль" size="small" />
-            )}
-            clearOnEscape
-          />
-        </FormControl>
-
-        <FormControl size="small" sx={{ minWidth: 200 }}>
-          <TextField
-            label="Телефон"
-            size="small"
-            value={param("phone")}
-            onChange={(e) => updateParam("phone", e.target.value)}
-          />
-        </FormControl>
-
-        <Button
-          variant="outlined"
-          color="secondary"
-          onClick={() => setSearchParams({})}
-        >
-          Очистити фільтри
-        </Button>
-      </div>
-
-      <div
-        style={{
-          height: 550,
-          borderRadius: "5px",
-          backgroundColor: "#f5f5f5",
-        }}
-      >
-        <StyledDataGrid
-          loading={query.isLoading}
-          rows={filteredRows}
-          getRowId={(row) => row.username}
-          columns={columns}
-          columnBuffer={3}
-          pageSizeOptions={[]}
-          getRowHeight={() => "auto"}
-          columnHeaderHeight={75}
-          rowSelection={false}
-          localeText={{
-            noRowsLabel: "Даних немає",
-          }}
-        />
-      </div>
-    </>
+          <div className="overflow-x-auto">
+            <table className="w-full text-left text-sm">
+              <thead>
+                <tr className="border-b text-muted-foreground">
+                  <th className="pb-2 font-medium">Ім'я</th>
+                  <th className="pb-2 font-medium">Email</th>
+                  <th className="pb-2 font-medium">Роль</th>
+                  <th className="pb-2 font-medium">Телефон</th>
+                  <th className="pb-2 font-medium">Дії</th>
+                </tr>
+              </thead>
+              <tbody>
+                {rows.map((row: User) => (
+                  <tr key={row.id} className="border-b last:border-0">
+                    <td className="py-2">
+                      <Link
+                        to={`/users/${row.id}`}
+                        className="text-primary hover:underline"
+                      >
+                        {row.name}
+                      </Link>
+                    </td>
+                    <td className="py-2">{row.email}</td>
+                    <td className="py-2">
+                      {ROLE_LABELS[row.role ?? ""] ?? row.role}
+                    </td>
+                    <td className="py-2">{row.phone ?? "—"}</td>
+                    <td className="py-2">
+                      <div className="flex items-center gap-1">
+                        <Button variant="ghost" size="icon-sm" asChild>
+                          <Link to={`/users/${row.id}`}>
+                            <Eye className="h-4 w-4" />
+                          </Link>
+                        </Button>
+                        <Button variant="ghost" size="icon-sm" asChild>
+                          <Link to={`/users/update/${row.id}`}>
+                            <Pencil className="h-4 w-4" />
+                          </Link>
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="icon-sm"
+                          onClick={() => handleDelete(row.id)}
+                        >
+                          <Trash2 className="h-4 w-4 text-destructive" />
+                        </Button>
+                      </div>
+                    </td>
+                  </tr>
+                ))}
+                {rows.length === 0 && (
+                  <tr>
+                    <td
+                      colSpan={5}
+                      className="py-4 text-center text-muted-foreground"
+                    >
+                      Нічого не знайдено
+                    </td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+          </div>
+        </CardContent>
+      </Card>
+    </div>
   );
 };
 

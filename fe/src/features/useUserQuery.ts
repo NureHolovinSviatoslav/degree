@@ -3,19 +3,19 @@ import { fetchAbstract } from "../utils/fetchAbstract";
 import { User, UserRole } from "../types/User";
 import { toEnum } from "../utils/toEnum";
 
-export const useUserQuery = (username?: string) => {
+export const useUserQuery = (id?: string) => {
   const queryClient = useQueryClient();
 
   return useQuery({
-    queryKey: ["users", username],
+    queryKey: ["users", id],
     queryFn: async () => {
-      const _user = (await fetchAbstract(
+      const data = (await fetchAbstract(
         { queryClient },
         {},
-        `users${username ? `/${username}` : ""}`,
+        `users${id ? `/${id}` : ""}`,
         "GET",
       )) as User[] | User;
-      const users = Array.isArray(_user) ? _user : [_user];
+      const users = Array.isArray(data) ? data : [data];
 
       return users.map((user) => ({
         ...user,
