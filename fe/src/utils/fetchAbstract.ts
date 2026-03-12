@@ -40,7 +40,7 @@ export const fetchAbstract = async <T>(
       queryClient.resetQueries(CURRENT_USER_QUERY_KEY);
     }
 
-    throw new Error(await response.text());
+    throw new Error(text);
   }
 
   try {

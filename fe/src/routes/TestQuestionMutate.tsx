@@ -1,23 +1,23 @@
-import { useMemo, useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
-import { ArrowLeft } from "lucide-react";
-import { useForm, Controller } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
+import { ArrowLeft } from "lucide-react";
+import { useMemo, useState } from "react";
+import { Controller, useForm } from "react-hook-form";
+import { Link, useNavigate } from "react-router-dom";
 import * as yup from "yup";
 
-import { TestQuestion } from "../types/TestQuestion";
-import { useTestQuestionQuery } from "../features/useTestQuestionQuery";
-import { useTestQuestionMutation } from "../features/useTestQuestionMutation";
-import { useLessonQuery } from "../features/useLessonQuery";
-import { useEdit } from "../utils/useEdit";
 import Loader from "../components/Loader";
+import { useLessonQuery } from "../features/useLessonQuery";
+import { useTestQuestionMutation } from "../features/useTestQuestionMutation";
+import { useTestQuestionQuery } from "../features/useTestQuestionQuery";
+import { TestQuestion } from "../types/TestQuestion";
+import { useEdit } from "../utils/useEdit";
 
 import { Button } from "../components/ui/button";
 import {
   Card,
+  CardContent,
   CardHeader,
   CardTitle,
-  CardContent,
 } from "../components/ui/card";
 import { Label } from "../components/ui/label";
 
@@ -54,7 +54,10 @@ export const TestQuestionMutate = () => {
     setError("");
     const payload = isEdit
       ? { type: "update" as const, data: { ...data, id: id! } as TestQuestion }
-      : { type: "create" as const, data: { ...data, id: "" } as TestQuestion };
+      : {
+          type: "create" as const,
+          data: { ...data, id: undefined } as unknown as TestQuestion,
+        };
 
     mutation
       .mutateAsync(payload)

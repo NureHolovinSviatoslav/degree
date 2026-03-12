@@ -53,8 +53,8 @@ async function checkStreaksAndNotify() {
       });
 
       if (
-        settings
-        && (!settings.streaks_enabled || !settings.notifications_enabled)
+        settings &&
+        (!settings.streaks_enabled || !settings.notifications_enabled)
       ) {
         continue;
       }
@@ -70,9 +70,12 @@ async function checkStreaksAndNotify() {
         streak_days: streak.current_count,
       };
 
-      const message = streak.last_active_date === yesterdayStr
-        ? formatStreakReminderMessage(data)
-        : formatStreakWarningMessage(data);
+      const message =
+        streak.last_active_date === yesterdayStr
+          ? formatStreakReminderMessage(data)
+          : formatStreakWarningMessage(data);
+
+      console.log(message);
 
       await sendSms(message);
     }

@@ -132,7 +132,8 @@ async function checkCourseCompletion(userId, lessonId) {
     },
   });
 
-  const percent = totalLessons > 0 ? (completedLessons / totalLessons) * 100 : 0;
+  const percent =
+    totalLessons > 0 ? (completedLessons / totalLessons) * 100 : 0;
 
   if (completedLessons >= totalLessons) {
     const enrollment = await Enrollment.findOne({
@@ -141,7 +142,11 @@ async function checkCourseCompletion(userId, lessonId) {
 
     if (enrollment && enrollment.status !== 'completed') {
       await Enrollment.update(
-        { status: 'completed', completion_percent: 100, last_activity_at: new Date() },
+        {
+          status: 'completed',
+          completion_percent: 100,
+          last_activity_at: new Date(),
+        },
         { where: { user_id: userId, course_id: courseId } },
       );
       await checkAndAwardCourseCompletionBadge(userId);

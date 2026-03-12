@@ -1,0 +1,26 @@
+curl -X POST http://localhost:3000/users \
+  -H "Content-Type: application/json" \
+  -d '{
+    "name": "Admin",
+    "email": "admin@example.com",
+    "password": "Admin123!",
+    "role": "admin"
+  }'
+
+curl -X POST http://localhost:3000/users \
+  -H "Content-Type: application/json" \
+  -d '{
+    "name": "Teacher",
+    "email": "teacher@example.com",
+    "password": "Teacher123!",
+    "role": "teacher"
+  }'
+
+curl -X POST http://localhost:3000/users \
+  -H "Content-Type: application/json" \
+  -d '{
+    "name": "Student",
+    "email": "student@example.com",
+    "password": "Student123!",
+    "role": "student"
+  }'

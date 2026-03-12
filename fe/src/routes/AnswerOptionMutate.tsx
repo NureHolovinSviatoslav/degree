@@ -1,23 +1,23 @@
-import { useMemo, useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
-import { ArrowLeft } from "lucide-react";
-import { useForm, Controller } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
+import { ArrowLeft } from "lucide-react";
+import { useMemo, useState } from "react";
+import { Controller, useForm } from "react-hook-form";
+import { Link, useNavigate } from "react-router-dom";
 import * as yup from "yup";
 
-import { AnswerOption } from "../types/AnswerOption";
-import { useAnswerOptionQuery } from "../features/useAnswerOptionQuery";
-import { useAnswerOptionMutation } from "../features/useAnswerOptionMutation";
-import { useTestQuestionQuery } from "../features/useTestQuestionQuery";
-import { useEdit } from "../utils/useEdit";
 import Loader from "../components/Loader";
+import { useAnswerOptionMutation } from "../features/useAnswerOptionMutation";
+import { useAnswerOptionQuery } from "../features/useAnswerOptionQuery";
+import { useTestQuestionQuery } from "../features/useTestQuestionQuery";
+import { AnswerOption } from "../types/AnswerOption";
+import { useEdit } from "../utils/useEdit";
 
 import { Button } from "../components/ui/button";
 import {
   Card,
+  CardContent,
   CardHeader,
   CardTitle,
-  CardContent,
 } from "../components/ui/card";
 import { Input } from "../components/ui/input";
 import { Label } from "../components/ui/label";
@@ -70,7 +70,7 @@ export const AnswerOptionMutate = () => {
         }
       : {
           type: "create" as const,
-          data: { ...data, id: "" } as AnswerOption,
+          data: { ...data, id: undefined } as unknown as AnswerOption,
         };
 
     mutation

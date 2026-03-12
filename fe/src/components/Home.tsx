@@ -1,43 +1,43 @@
-import { useContext, useMemo } from "react";
 import {
-  BarChart,
-  Bar,
-  XAxis,
-  YAxis,
-  CartesianGrid,
-  Tooltip,
-  ResponsiveContainer,
-  Cell,
-} from "recharts";
-import {
+  BarChart3,
   BookOpen,
-  Trophy,
+  Eye,
   Flame,
   GraduationCap,
   ShieldCheck,
-  BarChart3,
-  Eye,
+  Trophy,
 } from "lucide-react";
+import { useContext, useMemo } from "react";
+import {
+  Bar,
+  BarChart,
+  CartesianGrid,
+  Cell,
+  ResponsiveContainer,
+  Tooltip,
+  XAxis,
+  YAxis,
+} from "recharts";
 
 import { CurrentUserContext } from "../App";
-import { UserRole } from "../types/User";
+import { useActivityStreakQuery } from "../features/useActivityStreakQuery";
+import { useBadgeQuery } from "../features/useBadgeQuery";
 import { useCourseQuery } from "../features/useCourseQuery";
 import { useEnrollmentQuery } from "../features/useEnrollmentQuery";
-import { useLessonQuery } from "../features/useLessonQuery";
 import { useLessonProgressQuery } from "../features/useLessonProgressQuery";
-import { useActivityStreakQuery } from "../features/useActivityStreakQuery";
+import { useLessonQuery } from "../features/useLessonQuery";
 import { useUserBadgeQuery } from "../features/useUserBadgeQuery";
-import { useBadgeQuery } from "../features/useBadgeQuery";
+import { UserRole } from "../types/User";
 
+import { Badge } from "./ui/badge";
 import {
   Card,
+  CardContent,
+  CardDescription,
   CardHeader,
   CardTitle,
-  CardDescription,
-  CardContent,
 } from "./ui/card";
 import { Progress } from "./ui/progress";
-import { Badge } from "./ui/badge";
 
 const CHART_COLORS = [
   "oklch(0.809 0.105 251.813)",
@@ -102,8 +102,10 @@ function StudentHome({ userId, name }: { userId: string; name: string }) {
   const avgCompletion =
     myEnrollments.length > 0
       ? Math.round(
-          myEnrollments.reduce((sum, e) => sum + e.completion_percent, 0) /
-            myEnrollments.length,
+          myEnrollments.reduce(
+            (sum, e) => sum + Number(e.completion_percent),
+            0,
+          ) / myEnrollments.length,
         )
       : 0;
 
