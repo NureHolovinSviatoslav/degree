@@ -4,8 +4,8 @@ const { Sequelize } = require('sequelize');
 const { sequelize } = require('../services/db');
 const { User } = require('./User');
 
-const Notification = sequelize.define(
-  'notification',
+const ActivityStreak = sequelize.define(
+  'activity_streak',
   {
     id: {
       type: Sequelize.UUID,
@@ -15,45 +15,42 @@ const Notification = sequelize.define(
     user_id: {
       type: Sequelize.UUID,
       allowNull: false,
+      unique: true,
       references: {
         model: User,
         key: 'id',
       },
     },
-    channel: {
-      type: Sequelize.STRING(20),
+    current_count: {
+      type: Sequelize.INTEGER,
       allowNull: false,
+      defaultValue: 0,
       validate: {
-        isIn: [['whatsapp']],
+        min: 0,
       },
     },
-    message: {
-      type: Sequelize.TEXT,
-      allowNull: false,
-    },
-    sent_at: {
-      type: Sequelize.DATE,
-      allowNull: false,
-      defaultValue: Sequelize.NOW,
+    last_active_date: {
+      type: Sequelize.DATEONLY,
+      allowNull: true,
     },
   },
   {
-    tableName: 'notifications',
+    tableName: 'activity_streaks',
     timestamps: false,
   },
 );
 
-Notification.belongsTo(User, {
+ActivityStreak.belongsTo(User, {
   foreignKey: 'user_id',
   onDelete: 'CASCADE',
   onUpdate: 'CASCADE',
 });
-User.hasMany(Notification, {
+User.hasOne(ActivityStreak, {
   foreignKey: 'user_id',
   onDelete: 'CASCADE',
   onUpdate: 'CASCADE',
 });
 
 module.exports = {
-  Notification,
+  ActivityStreak,
 };

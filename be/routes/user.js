@@ -1,9 +1,7 @@
 'use strict';
 
 const { User } = require('../models/User');
-const { Notification } = require('../models/Notification');
 const express = require('express');
-const { Location } = require('../models/Location');
 const { hashString } = require('../services/hashString');
 const jwtLib = require('jsonwebtoken');
 const { createAuthMiddleware } = require('../services/createAuthMiddleware');
@@ -24,10 +22,10 @@ const getAll = async (req, res) => {
 };
 
 const getOne = async (req, res) => {
-  const { username } = req.params;
+  const { id } = req.params;
 
   try {
-    const user = await User.findByPk(username, {
+    const user = await User.findByPk(id, {
       attributes: { exclude: ['password_hash'] },
     });
     if (!user) {
@@ -45,10 +43,12 @@ const add = async (req, res) => {
   try {
     const user = await User.create({
       ...userData,
-      password_hash: hashString(userData.password),
+      password_hash: hashString(userData.password).toString(),
     });
     res.status(201).send({
-      username: user.username,
+      id: user.id,
+      name: user.name,
+      email: user.email,
       role: user.role,
     });
   } catch (err) {
@@ -57,33 +57,23 @@ const add = async (req, res) => {
 };
 
 const update = async (req, res) => {
-  const { username } = req.params;
+  const { id } = req.params;
   const userData = { ...req.body };
 
   try {
-    await User.update(
-      {
-        ...userData,
-        password_hash: hashString(userData.password),
-      },
-      {
-        where: { username },
-      },
-    );
-    const user = await User.findByPk(userData.username || username, {
+    const updateData = { ...userData };
+    if (userData.password) {
+      updateData.password_hash = hashString(userData.password).toString();
+    }
+    delete updateData.password;
+
+    await User.update(updateData, { where: { id } });
+    const user = await User.findByPk(id, {
       attributes: { exclude: ['password_hash'] },
     });
     if (!user) {
       return res.status(404).send('User not found');
     }
-    await Location.update(
-      { responsible_username: userData.username || username },
-      { where: { responsible_username: userData.username || username } },
-    );
-    await Notification.update(
-      { notified_username: userData.username || username },
-      { where: { notified_username: userData.username || username } },
-    );
     res.send(user);
   } catch (err) {
     res.status(400).send(err.message);
@@ -91,25 +81,13 @@ const update = async (req, res) => {
 };
 
 const remove = async (req, res) => {
-  const { username } = req.params;
+  const { id } = req.params;
 
   try {
-    const deleted = await User.destroy({
-      where: { username },
-    });
+    const deleted = await User.destroy({ where: { id } });
     if (!deleted) {
       return res.status(404).send('User not found');
     }
-
-    await Location.update(
-      { responsible_username: null },
-      { where: { responsible_username: username } },
-    );
-    await Notification.update(
-      { notified_username: null },
-      { where: { notified_username: username } },
-    );
-
     res.status(204).send({});
   } catch (err) {
     res.status(400).send(err.message);
@@ -117,24 +95,19 @@ const remove = async (req, res) => {
 };
 
 const login = async (req, res) => {
-  const { username, password } = req.body;
+  const { email, password } = req.body;
 
   try {
-    const user = await User.findByPk(username);
+    const user = await User.findOne({ where: { email } });
 
     if (!user || user.password_hash !== hashString(password).toString()) {
-      return res.status(401).send('Invalid username or password');
+      return res.status(401).send('Invalid email or password');
     }
 
     const accessToken = jwtLib.sign(
-      {
-        username: user.username,
-        role: user.role,
-      },
+      { id: user.id, role: user.role },
       process.env.JWT_SECRET,
-      {
-        expiresIn: '1h',
-      },
+      { expiresIn: '1h' },
     );
 
     res.json({ accessToken });
@@ -144,10 +117,10 @@ const login = async (req, res) => {
 };
 
 router.get('/', ...createAuthMiddleware([roles.ADMIN]), getAll);
-router.get('/:username', ...createSelfMiddleware(), getOne);
+router.get('/:id', ...createSelfMiddleware(), getOne);
 router.post('/', add);
-router.patch('/:username', ...createAuthMiddleware([roles.ADMIN]), update);
-router.delete('/:username', ...createAuthMiddleware([roles.ADMIN]), remove);
+router.patch('/:id', ...createAuthMiddleware([roles.ADMIN]), update);
+router.delete('/:id', ...createAuthMiddleware([roles.ADMIN]), remove);
 router.post('/login', login);
 
 module.exports = { router };

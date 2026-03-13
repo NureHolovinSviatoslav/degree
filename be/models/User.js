@@ -6,16 +6,43 @@ const { sequelize } = require('../services/db');
 const User = sequelize.define(
   'user',
   {
-    username: {
-      type: Sequelize.STRING,
+    id: {
+      type: Sequelize.UUID,
+      defaultValue: Sequelize.UUIDV4,
       primaryKey: true,
     },
-    password_hash: Sequelize.STRING,
-    role: Sequelize.STRING,
-    phone: Sequelize.STRING,
+    name: {
+      type: Sequelize.STRING(255),
+      allowNull: false,
+    },
+    email: {
+      type: Sequelize.STRING(255),
+      allowNull: false,
+      unique: true,
+    },
+    password_hash: {
+      type: Sequelize.STRING(255),
+      allowNull: false,
+    },
+    role: {
+      type: Sequelize.STRING(20),
+      allowNull: false,
+      validate: {
+        isIn: [['admin', 'teacher', 'student']],
+      },
+    },
+    phone: {
+      type: Sequelize.STRING(30),
+      allowNull: true,
+    },
+    created_at: {
+      type: Sequelize.DATE,
+      allowNull: false,
+      defaultValue: Sequelize.NOW,
+    },
   },
   {
-    tableName: 'user',
+    tableName: 'users',
     timestamps: false,
   },
 );

@@ -9,18 +9,18 @@ function createSelfMiddleware() {
     jwt,
     (req, res, next) => {
       const user = req.user;
-      let username = req.params.username;
+      let id = req.params.id;
 
       if (!user) {
         return res.status(401).json({ message: 'Unauthorized' });
       }
 
-      if (username === 'me') {
-        username = user.username;
-        req.params.username = username;
+      if (id === 'me') {
+        id = user.id;
+        req.params.id = id;
       }
 
-      if (username !== user.username && user.role !== 'admin') {
+      if (id !== user.id && user.role !== 'admin') {
         return res.status(403).json({ message: 'Forbidden' });
       }
 

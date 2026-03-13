@@ -3,9 +3,10 @@
 const { Sequelize } = require('sequelize');
 const { sequelize } = require('../services/db');
 const { User } = require('./User');
+const { Badge } = require('./Badge');
 
-const Notification = sequelize.define(
-  'notification',
+const UserBadge = sequelize.define(
+  'user_badge',
   {
     id: {
       type: Sequelize.UUID,
@@ -20,40 +21,54 @@ const Notification = sequelize.define(
         key: 'id',
       },
     },
-    channel: {
-      type: Sequelize.STRING(20),
+    badge_id: {
+      type: Sequelize.UUID,
       allowNull: false,
-      validate: {
-        isIn: [['whatsapp']],
+      references: {
+        model: Badge,
+        key: 'id',
       },
     },
-    message: {
-      type: Sequelize.TEXT,
-      allowNull: false,
-    },
-    sent_at: {
+    awarded_at: {
       type: Sequelize.DATE,
       allowNull: false,
       defaultValue: Sequelize.NOW,
     },
   },
   {
-    tableName: 'notifications',
+    tableName: 'user_badges',
     timestamps: false,
+    indexes: [
+      {
+        unique: true,
+        fields: ['user_id', 'badge_id'],
+      },
+    ],
   },
 );
 
-Notification.belongsTo(User, {
+UserBadge.belongsTo(User, {
   foreignKey: 'user_id',
   onDelete: 'CASCADE',
   onUpdate: 'CASCADE',
 });
-User.hasMany(Notification, {
+User.hasMany(UserBadge, {
   foreignKey: 'user_id',
+  onDelete: 'CASCADE',
+  onUpdate: 'CASCADE',
+});
+
+UserBadge.belongsTo(Badge, {
+  foreignKey: 'badge_id',
+  onDelete: 'CASCADE',
+  onUpdate: 'CASCADE',
+});
+Badge.hasMany(UserBadge, {
+  foreignKey: 'badge_id',
   onDelete: 'CASCADE',
   onUpdate: 'CASCADE',
 });
 
 module.exports = {
-  Notification,
+  UserBadge,
 };

@@ -1,6 +1,6 @@
 'use strict';
 
-const { Notification } = require('../models/Notification');
+const { UserBadge } = require('../models/UserBadge');
 const express = require('express');
 const { createAuthMiddleware } = require('../services/createAuthMiddleware');
 const { roles } = require('../services/roles');
@@ -9,8 +9,8 @@ const router = express.Router();
 
 const getAll = async (req, res) => {
   try {
-    const notifications = await Notification.findAll();
-    res.send(notifications);
+    const userBadges = await UserBadge.findAll();
+    res.send(userBadges);
   } catch (err) {
     res.status(400).send(err.message);
   }
@@ -20,22 +20,22 @@ const getOne = async (req, res) => {
   const { id } = req.params;
 
   try {
-    const notification = await Notification.findByPk(id);
-    if (!notification) {
-      return res.status(404).send('Notification not found');
+    const userBadge = await UserBadge.findByPk(id);
+    if (!userBadge) {
+      return res.status(404).send('User badge not found');
     }
-    res.send(notification);
+    res.send(userBadge);
   } catch (err) {
     res.status(400).send(err.message);
   }
 };
 
 const add = async (req, res) => {
-  const notificationData = { ...req.body };
+  const userBadgeData = { ...req.body };
 
   try {
-    const notification = await Notification.create(notificationData);
-    res.status(201).send(notification);
+    const userBadge = await UserBadge.create(userBadgeData);
+    res.status(201).send(userBadge);
   } catch (err) {
     res.status(400).send(err.message);
   }
@@ -43,15 +43,15 @@ const add = async (req, res) => {
 
 const update = async (req, res) => {
   const { id } = req.params;
-  const notificationData = { ...req.body };
+  const userBadgeData = { ...req.body };
 
   try {
-    await Notification.update(notificationData, { where: { id } });
-    const notification = await Notification.findByPk(id);
-    if (!notification) {
-      return res.status(404).send('Notification not found');
+    await UserBadge.update(userBadgeData, { where: { id } });
+    const userBadge = await UserBadge.findByPk(id);
+    if (!userBadge) {
+      return res.status(404).send('User badge not found');
     }
-    res.send(notification);
+    res.send(userBadge);
   } catch (err) {
     res.status(400).send(err.message);
   }
@@ -61,9 +61,9 @@ const remove = async (req, res) => {
   const { id } = req.params;
 
   try {
-    const deleted = await Notification.destroy({ where: { id } });
+    const deleted = await UserBadge.destroy({ where: { id } });
     if (!deleted) {
-      return res.status(404).send('Notification not found');
+      return res.status(404).send('User badge not found');
     }
     res.status(204).send({});
   } catch (err) {
@@ -73,12 +73,12 @@ const remove = async (req, res) => {
 
 router.get(
   '/',
-  ...createAuthMiddleware([roles.ADMIN, roles.TEACHER]),
+  ...createAuthMiddleware([roles.ADMIN, roles.TEACHER, roles.STUDENT]),
   getAll,
 );
 router.get(
   '/:id',
-  ...createAuthMiddleware([roles.ADMIN, roles.TEACHER]),
+  ...createAuthMiddleware([roles.ADMIN, roles.TEACHER, roles.STUDENT]),
   getOne,
 );
 router.post('/', ...createAuthMiddleware([roles.ADMIN]), add);
