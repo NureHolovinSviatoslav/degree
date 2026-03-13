@@ -1,16 +1,9 @@
-import { CircularProgress } from "@mui/material";
+import { Loader2 } from "lucide-react";
 
 const Loader = () => {
   return (
-    <div
-      style={{
-        display: "flex",
-        justifyContent: "center",
-        alignItems: "center",
-        height: "calc(100vh - 16px - 35px)",
-      }}
-    >
-      <CircularProgress />
+    <div className="flex h-[calc(100vh-16px-35px)] items-center justify-center">
+      <Loader2 className="h-8 w-8 animate-spin text-muted-foreground" />
     </div>
   );
 };

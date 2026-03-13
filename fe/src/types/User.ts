@@ -1,12 +1,15 @@
 export enum UserRole {
   Admin = "admin",
-  Staff = "staff",
-  IoT = "iot",
+  Teacher = "teacher",
+  Student = "student",
 }
 
 export type User = {
-  username: string;
-  password: string;
+  id: string;
+  name: string;
+  email: string;
+  password?: string;
   role: UserRole | null;
-  phone: string;
+  phone?: string;
+  created_at?: string;
 };

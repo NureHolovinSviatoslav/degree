@@ -1,166 +1,117 @@
-import { Button, FormControl, TextField } from "@mui/material";
 import { useState } from "react";
-import { Controller, useForm } from "react-hook-form";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { z } from "zod";
+import { LogIn, RotateCcw } from "lucide-react";
+
 import { useLoginMutation } from "../features/useLoginMutation";
-import { Login } from "../types/Login";
 
-import { yupResolver } from "@hookform/resolvers/yup";
-import * as yup from "yup";
+import {
+  Card,
+  CardHeader,
+  CardTitle,
+  CardDescription,
+  CardContent,
+} from "./ui/card";
+import { Button } from "./ui/button";
+import { Input } from "./ui/input";
+import { Label } from "./ui/label";
 
-const schema = yup.object({
-  username: yup.string().required("Заповніть поле"),
-  password: yup.string().required("Заповніть поле"),
+const schema = z.object({
+  email: z.string().min(1, "Заповніть поле"),
+  password: z.string().min(1, "Заповніть поле"),
 });
 
 const SignIn = () => {
-  const [error, setError] = useState<string>("");
-
+  const [error, setError] = useState("");
   const login = useLoginMutation();
 
-  const form = useForm<Login>({
-    resolver: yupResolver(schema),
-    mode: "onSubmit",
-    defaultValues: {
-      username: "",
-      password: "",
-    },
-    values: undefined,
-    resetOptions: { keepDefaultValues: true },
+  const {
+    register,
+    handleSubmit,
+    reset,
+    formState: { errors, isSubmitting },
+  } = useForm<z.infer<typeof schema>>({
+    resolver: zodResolver(schema) as never,
+    defaultValues: { email: "", password: "" },
   });
 
-  const handleCreate = form.handleSubmit((data) => {
+  const onSubmit = handleSubmit((data) => {
     setError("");
-
-    login.mutateAsync(data).catch((err) => {
+    login.mutateAsync(data).catch((err: Error) => {
       setError(err.message);
     });
   });
-  const handleReset = () => {
+
+  const onReset = () => {
     setError("");
-    form.reset();
+    reset();
   };
 
   return (
-    <>
-      <div
-        style={{
-          paddingInline: 10,
-        }}
-      >
-        <div
-          style={{
-            display: "flex",
-            justifyContent: "space-between",
-            alignItems: "center",
-          }}
-        >
-          <h4
-            style={{
-              textTransform: "uppercase",
-              fontWeight: "bold",
-              marginBlock: 30,
-            }}
-          >
-            Увійти в систему
-          </h4>
-        </div>
-
-        <div
-          style={{
-            color: "red",
-            paddingBottom: 10,
-          }}
-        >
-          {error && <>Щось пішло не так: {error}</>}
-        </div>
-
-        <div
-          style={{
-            marginBottom: 20,
-            padding: 10,
-            border: "1px solid #ccc",
-            borderRadius: 5,
-          }}
-        >
-          <form
-            style={{
-              display: "flex",
-              flexDirection: "column",
-              justifyContent: "space-between",
-              alignItems: "center",
-              flexWrap: "wrap",
-            }}
-          >
-            <Controller
-              name="username"
-              control={form.control}
-              render={({ field, fieldState }) => (
-                <FormControl
-                  size="small"
-                  fullWidth
-                  sx={{ m: 1, minWidth: 120, maxWidth: "95%" }}
-                >
-                  <TextField
-                    label="Логін"
-                    placeholder="user_1"
-                    onChange={field.onChange}
-                    value={field.value}
-                    type="search"
-                    size="small"
-                    required
-                    error={!!fieldState.error}
-                    helperText={fieldState.error?.message}
-                  />
-                </FormControl>
-              )}
-            />
-
-            <Controller
-              name="password"
-              control={form.control}
-              render={({ field, fieldState }) => (
-                <FormControl
-                  size="small"
-                  fullWidth
-                  sx={{ m: 1, minWidth: 120, maxWidth: "95%" }}
-                >
-                  <TextField
-                    label="Пароль"
-                    onChange={field.onChange}
-                    value={field.value}
-                    size="small"
-                    required
-                    type="password"
-                    error={!!fieldState.error}
-                    helperText={fieldState.error?.message}
-                  />
-                </FormControl>
-              )}
-            />
-          </form>
-
-          <div
-            style={{ width: "100%", display: "flex", justifyContent: "center" }}
-          >
-            <Button
-              onClick={handleCreate}
-              variant="contained"
-              sx={{ m: 1, minWidth: 80 }}
-            >
-              Увійти
-            </Button>
-            <Button
-              onClick={handleReset}
-              variant="contained"
-              color="error"
-              sx={{ m: 1, minWidth: 80 }}
-            >
-              Очистити
-            </Button>
+    <div className="flex min-h-screen items-center justify-center px-4">
+      <Card className="w-full max-w-sm">
+        <CardHeader className="text-center">
+          <div className="mx-auto mb-2 flex h-12 w-12 items-center justify-center rounded-full bg-primary/10">
+            <LogIn className="h-6 w-6 text-primary" />
           </div>
-        </div>
-      </div>
-    </>
+          <CardTitle className="text-xl">Увійти в систему</CardTitle>
+          <CardDescription>
+            Введіть свої дані для входу на платформу
+          </CardDescription>
+        </CardHeader>
+
+        <CardContent>
+          {error && (
+            <div className="mb-4 rounded-md bg-destructive/10 px-3 py-2 text-sm text-destructive">
+              Щось пішло не так: {error}
+            </div>
+          )}
+
+          <form onSubmit={onSubmit} className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="email">Електронна пошта</Label>
+              <Input
+                id="email"
+                type="text"
+                placeholder="user@example.com"
+                {...register("email")}
+                aria-invalid={!!errors.email}
+              />
+              {errors.email && (
+                <p className="text-xs text-destructive">
+                  {errors.email.message}
+                </p>
+              )}
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="password">Пароль</Label>
+              <Input
+                id="password"
+                type="password"
+                {...register("password")}
+                aria-invalid={!!errors.password}
+              />
+              {errors.password && (
+                <p className="text-xs text-destructive">
+                  {errors.password.message}
+                </p>
+              )}
+            </div>
+
+            <div className="flex gap-2 pt-2">
+              <Button type="submit" className="flex-1" disabled={isSubmitting}>
+                Увійти
+              </Button>
+              <Button type="button" variant="outline" onClick={onReset}>
+                <RotateCcw className="h-4 w-4" />
+              </Button>
+            </div>
+          </form>
+        </CardContent>
+      </Card>
+    </div>
   );
 };
 

@@ -1,5 +1,4 @@
 import { useMutation, useQueryClient } from "react-query";
-
 import { User } from "../types/User";
 import { fetchAbstract } from "../utils/fetchAbstract";
 import { typeToMethod } from "../utils/typeToMethod";
@@ -14,11 +13,11 @@ export const useUserMutation = () => {
       data,
     }:
       | { type: "create" | "update"; data: User }
-      | { type: "delete"; data: { username: string } }) => {
+      | { type: "delete"; data: { id: string } }) => {
       return (await fetchAbstract(
         { queryClient },
         {},
-        `users${type !== "create" ? `/${data.username}` : ""}`,
+        `users${type !== "create" ? `/${data.id}` : ""}`,
         typeToMethod[type],
         data,
       )) as User;

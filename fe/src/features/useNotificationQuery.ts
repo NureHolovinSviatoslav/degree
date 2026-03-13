@@ -6,7 +6,7 @@ export const useNotificationQuery = (id?: string) => {
   const queryClient = useQueryClient();
 
   return useQuery({
-    queryKey: ["notification", id],
+    queryKey: ["notifications", id],
     queryFn: async () => {
       const data = (await fetchAbstract(
         { queryClient },
