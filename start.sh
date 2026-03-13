@@ -2,15 +2,19 @@
 
 cleanup() {
   echo "Stopping..."
-  kill "$child1" "$child2"
+  kill "$child0" "$child1" "$child2"
 }
 trap cleanup SIGINT
 
 
 echo "Starting project..."
 
+(cd fe && npm run tailwind) &
+child0=$!
+
 (cd fe && npm run dev) &
 child1=$!
+
 
 (cd be && npm start) &
 child2=$!
