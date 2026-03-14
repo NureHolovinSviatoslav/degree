@@ -75,6 +75,11 @@ const NotificationSearch = lazy(() => import("./routes/NotificationSearch"));
 const NotificationDetails = lazy(() => import("./routes/NotificationDetails"));
 const NotificationMutate = lazy(() => import("./routes/NotificationMutate"));
 
+const MyCourses = lazy(() => import("./routes/MyCourses"));
+const CourseLesson = lazy(() => import("./routes/CourseLesson"));
+const LessonTest = lazy(() => import("./routes/LessonTest"));
+const MySettings = lazy(() => import("./routes/MySettings"));
+
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
@@ -85,11 +90,20 @@ const queryClient = new QueryClient({
 });
 
 const adminOnly = [UserRole.Admin];
+const studentOnly = [UserRole.Student];
 const noAccess = <>Немає доступу</>;
 
 function AdminRoute({ children }: { children: React.ReactNode }) {
   return (
     <ACLWrapper allowedRoles={adminOnly} fallback={noAccess}>
+      {children}
+    </ACLWrapper>
+  );
+}
+
+function StudentRoute({ children }: { children: React.ReactNode }) {
+  return (
+    <ACLWrapper allowedRoles={studentOnly} fallback={noAccess}>
       {children}
     </ACLWrapper>
   );
@@ -104,6 +118,38 @@ const Router = () => {
             <Route path="/" element={<App />}>
               <Route index element={<Home />} />
               <Route path="profile" element={<Profile />} />
+              <Route
+                path="my-courses"
+                element={
+                  <StudentRoute>
+                    <MyCourses />
+                  </StudentRoute>
+                }
+              />
+              <Route
+                path="my-courses/:courseId/lessons/:lessonId"
+                element={
+                  <StudentRoute>
+                    <CourseLesson />
+                  </StudentRoute>
+                }
+              />
+              <Route
+                path="my-courses/:courseId/lessons/:lessonId/test"
+                element={
+                  <StudentRoute>
+                    <LessonTest />
+                  </StudentRoute>
+                }
+              />
+              <Route
+                path="my-settings"
+                element={
+                  <StudentRoute>
+                    <MySettings />
+                  </StudentRoute>
+                }
+              />
 
               <Route
                 path="users"
