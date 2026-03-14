@@ -1,5 +1,3 @@
-import { useContext, useMemo, useRef, useState } from "react";
-import { Link } from "react-router-dom";
 import {
   BookOpen,
   CheckCircle2,
@@ -9,13 +7,15 @@ import {
   Search,
   X,
 } from "lucide-react";
+import { useContext, useMemo, useRef, useState } from "react";
+import { Link } from "react-router-dom";
 
 import { CurrentUserContext } from "../App";
 import { useCourseQuery } from "../features/useCourseQuery";
-import { useEnrollmentQuery } from "../features/useEnrollmentQuery";
 import { useEnrollmentMutation } from "../features/useEnrollmentMutation";
-import { useLessonQuery } from "../features/useLessonQuery";
+import { useEnrollmentQuery } from "../features/useEnrollmentQuery";
 import { useLessonProgressQuery } from "../features/useLessonProgressQuery";
+import { useLessonQuery } from "../features/useLessonQuery";
 import { Course } from "../types/Course";
 
 import { Badge } from "../components/ui/badge";
@@ -29,6 +29,7 @@ import {
 } from "../components/ui/card";
 import { Input } from "../components/ui/input";
 import { Progress } from "../components/ui/progress";
+import { Enrollment } from "../types/Enrollment";
 
 function CourseSearchDropdown({
   availableCourses,
@@ -159,8 +160,7 @@ const MyCourses = () => {
   );
 
   const availableCourses = useMemo(
-    () =>
-      courses.filter((c) => c.is_published && !enrolledCourseIds.has(c.id)),
+    () => courses.filter((c) => c.is_published && !enrolledCourseIds.has(c.id)),
     [courses, enrolledCourseIds],
   );
 
@@ -183,12 +183,11 @@ const MyCourses = () => {
       {
         type: "create",
         data: {
-          id: "",
           user_id: user.id,
           course_id: courseId,
           status: "in_progress",
           completion_percent: 0,
-        },
+        } as unknown as Enrollment,
       },
       { onSettled: () => setEnrollingId(null) },
     );

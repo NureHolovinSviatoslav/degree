@@ -1,9 +1,9 @@
-import { useContext, useEffect, useMemo, useState } from "react";
 import { Award, Bell, Flame, Save, Settings } from "lucide-react";
+import { useContext, useEffect, useMemo, useState } from "react";
 
 import { CurrentUserContext } from "../App";
-import { useGamificationSettingsQuery } from "../features/useGamificationSettingsQuery";
 import { useGamificationSettingsMutation } from "../features/useGamificationSettingsMutation";
+import { useGamificationSettingsQuery } from "../features/useGamificationSettingsQuery";
 
 import { Button } from "../components/ui/button";
 import {
@@ -65,8 +65,7 @@ const SETTINGS_OPTIONS = [
 
 const MySettings = () => {
   const user = useContext(CurrentUserContext);
-  const { data: allSettings = [], isLoading } =
-    useGamificationSettingsQuery();
+  const { data: allSettings = [], isLoading } = useGamificationSettingsQuery();
   const mutation = useGamificationSettingsMutation();
 
   const mySettings = useMemo(
@@ -118,9 +117,9 @@ const MySettings = () => {
         {
           type: "create",
           data: {
-            id: "",
             user_id: user.id,
             ...form,
+            id: undefined as unknown as string,
           },
         },
         {
@@ -164,9 +163,7 @@ const MySettings = () => {
                 </div>
                 <div>
                   <p className="text-sm font-medium">{label}</p>
-                  <p className="text-xs text-muted-foreground">
-                    {description}
-                  </p>
+                  <p className="text-xs text-muted-foreground">{description}</p>
                 </div>
               </div>
               <Toggle

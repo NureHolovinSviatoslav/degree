@@ -1,5 +1,3 @@
-import { useContext, useMemo } from "react";
-import { Link, useNavigate, useParams } from "react-router-dom";
 import {
   CheckCircle2,
   ChevronRight,
@@ -8,15 +6,17 @@ import {
   Play,
   PlayCircle,
 } from "lucide-react";
+import { useContext, useMemo } from "react";
+import { Link, useNavigate, useParams } from "react-router-dom";
 
 import { CurrentUserContext } from "../App";
 import { useCourseQuery } from "../features/useCourseQuery";
 import { useEnrollmentQuery } from "../features/useEnrollmentQuery";
-import { useLessonQuery } from "../features/useLessonQuery";
-import { useLessonProgressQuery } from "../features/useLessonProgressQuery";
 import { useLessonProgressMutation } from "../features/useLessonProgressMutation";
-import { Lesson } from "../types/Lesson";
+import { useLessonProgressQuery } from "../features/useLessonProgressQuery";
+import { useLessonQuery } from "../features/useLessonQuery";
 
+import Loader from "../components/Loader";
 import { Badge } from "../components/ui/badge";
 import { Button } from "../components/ui/button";
 import {
@@ -28,7 +28,6 @@ import {
 } from "../components/ui/card";
 import { Progress } from "../components/ui/progress";
 import { cn } from "../lib/utils";
-import Loader from "../components/Loader";
 
 const CourseLesson = () => {
   const { courseId, lessonId } = useParams<{
@@ -100,7 +99,7 @@ const CourseLesson = () => {
     progressMutation.mutate({
       type: "create",
       data: {
-        id: "",
+        id: undefined as unknown as string,
         user_id: user.id,
         lesson_id: currentLesson.id,
         is_viewed: true,
@@ -190,9 +189,7 @@ const CourseLesson = () => {
               size="lg"
               className="flex-1 sm:flex-none"
             >
-              <Link
-                to={`/my-courses/${courseId}/lessons/${lessonId}/test`}
-              >
+              <Link to={`/my-courses/${courseId}/lessons/${lessonId}/test`}>
                 <FileText className="mr-2 h-4 w-4" />
                 Пройти тест
               </Link>
@@ -204,9 +201,7 @@ const CourseLesson = () => {
                 size="lg"
                 className="flex-1 sm:flex-none"
                 onClick={() =>
-                  navigate(
-                    `/my-courses/${courseId}/lessons/${nextLesson.id}`,
-                  )
+                  navigate(`/my-courses/${courseId}/lessons/${nextLesson.id}`)
                 }
               >
                 Наступний урок
