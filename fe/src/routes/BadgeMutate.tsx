@@ -1,22 +1,22 @@
-import { useState } from "react";
-import { Link, useNavigate } from "react-router-dom";
-import { ArrowLeft } from "lucide-react";
-import { useForm, Controller } from "react-hook-form";
 import { yupResolver } from "@hookform/resolvers/yup";
+import { ArrowLeft } from "lucide-react";
+import { useState } from "react";
+import { Controller, useForm } from "react-hook-form";
+import { Link, useNavigate } from "react-router-dom";
 import * as yup from "yup";
 
-import { Badge as BadgeType } from "../types/Badge";
-import { useBadgeQuery } from "../features/useBadgeQuery";
-import { useBadgeMutation } from "../features/useBadgeMutation";
-import { useEdit } from "../utils/useEdit";
 import Loader from "../components/Loader";
+import { useBadgeMutation } from "../features/useBadgeMutation";
+import { useBadgeQuery } from "../features/useBadgeQuery";
+import { Badge as BadgeType } from "../types/Badge";
+import { useEdit } from "../utils/useEdit";
 
 import { Button } from "../components/ui/button";
 import {
   Card,
+  CardContent,
   CardHeader,
   CardTitle,
-  CardContent,
 } from "../components/ui/card";
 import { Input } from "../components/ui/input";
 import { Label } from "../components/ui/label";
@@ -63,7 +63,7 @@ export const BadgeMutate = () => {
           type: "create" as const,
           data: {
             ...data,
-            id: "",
+            id: undefined as unknown as string,
             condition_type: data.condition_type as BadgeType["condition_type"],
           } as BadgeType,
         };

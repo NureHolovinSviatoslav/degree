@@ -1,52 +1,56 @@
+import { yupResolver } from "@hookform/resolvers/yup";
+import { LogIn } from "lucide-react";
 import { useState } from "react";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { z } from "zod";
-import { LogIn, RotateCcw } from "lucide-react";
+import { Controller, useForm } from "react-hook-form";
+import * as yup from "yup";
 
 import { useLoginMutation } from "../features/useLoginMutation";
 
+import { Button } from "./ui/button";
 import {
   Card,
+  CardContent,
+  CardDescription,
   CardHeader,
   CardTitle,
-  CardDescription,
-  CardContent,
 } from "./ui/card";
-import { Button } from "./ui/button";
 import { Input } from "./ui/input";
 import { Label } from "./ui/label";
 
-const schema = z.object({
-  email: z.string().min(1, "Заповніть поле"),
-  password: z.string().min(1, "Заповніть поле"),
+const schema = yup.object({
+  email: yup.string().required("Заповніть поле"),
+  password: yup.string().required("Заповніть поле"),
 });
+
+type SignInFormData = yup.InferType<typeof schema>;
 
 const SignIn = () => {
   const [error, setError] = useState("");
   const login = useLoginMutation();
 
   const {
-    register,
+    control,
     handleSubmit,
-    reset,
-    formState: { errors, isSubmitting },
-  } = useForm<z.infer<typeof schema>>({
-    resolver: zodResolver(schema) as never,
-    defaultValues: { email: "", password: "" },
+    formState: { isSubmitting },
+  } = useForm<SignInFormData>({
+    resolver: yupResolver(schema),
+    defaultValues: {
+      email: "",
+      password: "",
+    },
+    mode: "onSubmit",
+    reValidateMode: "onChange",
   });
 
-  const onSubmit = handleSubmit((data) => {
+  const onSubmit = handleSubmit(async (data) => {
     setError("");
-    login.mutateAsync(data).catch((err: Error) => {
-      setError(err.message);
-    });
-  });
 
-  const onReset = () => {
-    setError("");
-    reset();
-  };
+    try {
+      await login.mutateAsync(data);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Unknown error");
+    }
+  });
 
   return (
     <div className="flex min-h-screen items-center justify-center px-4">
@@ -68,44 +72,59 @@ const SignIn = () => {
             </div>
           )}
 
-          <form onSubmit={onSubmit} className="space-y-4">
+          <form onSubmit={onSubmit} className="space-y-4" noValidate>
             <div className="space-y-2">
               <Label htmlFor="email">Електронна пошта</Label>
-              <Input
-                id="email"
-                type="text"
-                placeholder="user@example.com"
-                {...register("email")}
-                aria-invalid={!!errors.email}
+              <Controller
+                name="email"
+                control={control}
+                render={({ field, fieldState }) => (
+                  <>
+                    <Input
+                      {...field}
+                      id="email"
+                      type="text"
+                      placeholder="user@example.com"
+                      aria-invalid={fieldState.error ? "true" : undefined}
+                      className={fieldState.error ? "bg-destructive/5" : ""}
+                    />
+                    {fieldState.error && (
+                      <p className="text-xs text-destructive">
+                        {fieldState.error.message}
+                      </p>
+                    )}
+                  </>
+                )}
               />
-              {errors.email && (
-                <p className="text-xs text-destructive">
-                  {errors.email.message}
-                </p>
-              )}
             </div>
 
             <div className="space-y-2">
               <Label htmlFor="password">Пароль</Label>
-              <Input
-                id="password"
-                type="password"
-                {...register("password")}
-                aria-invalid={!!errors.password}
+              <Controller
+                name="password"
+                control={control}
+                render={({ field, fieldState }) => (
+                  <>
+                    <Input
+                      {...field}
+                      id="password"
+                      type="password"
+                      aria-invalid={fieldState.error ? "true" : undefined}
+                      className={fieldState.error ? "bg-destructive/5" : ""}
+                    />
+                    {fieldState.error && (
+                      <p className="text-xs text-destructive">
+                        {fieldState.error.message}
+                      </p>
+                    )}
+                  </>
+                )}
               />
-              {errors.password && (
-                <p className="text-xs text-destructive">
-                  {errors.password.message}
-                </p>
-              )}
             </div>
 
             <div className="flex gap-2 pt-2">
               <Button type="submit" className="flex-1" disabled={isSubmitting}>
-                Увійти
-              </Button>
-              <Button type="button" variant="outline" onClick={onReset}>
-                <RotateCcw className="h-4 w-4" />
+                {isSubmitting ? "Завантаження..." : "Увійти"}
               </Button>
             </div>
           </form>
