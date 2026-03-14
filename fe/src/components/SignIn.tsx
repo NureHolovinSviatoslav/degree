@@ -2,6 +2,7 @@ import { yupResolver } from "@hookform/resolvers/yup";
 import { LogIn } from "lucide-react";
 import { useState } from "react";
 import { Controller, useForm } from "react-hook-form";
+import { Link } from "react-router-dom";
 import * as yup from "yup";
 
 import { useLoginMutation } from "../features/useLoginMutation";
@@ -127,6 +128,13 @@ const SignIn = () => {
                 {isSubmitting ? "Завантаження..." : "Увійти"}
               </Button>
             </div>
+
+            <p className="text-center text-sm text-muted-foreground">
+              Немає облікового запису?{" "}
+              <Link to="/register" className="text-primary underline-offset-4 hover:underline">
+                Зареєструватись
+              </Link>
+            </p>
           </form>
         </CardContent>
       </Card>

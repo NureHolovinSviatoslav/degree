@@ -1,6 +1,9 @@
 'use strict';
 
 const { User } = require('../models/User');
+const {
+  GamificationSettings,
+} = require('../models/GamificationSettings');
 const express = require('express');
 const { hashString } = require('../services/hashString');
 const jwtLib = require('jsonwebtoken');
@@ -94,6 +97,42 @@ const remove = async (req, res) => {
   }
 };
 
+const register = async (req, res) => {
+  const { name, email, password, phone } = req.body;
+
+  try {
+    const existing = await User.findOne({ where: { email } });
+    if (existing) {
+      return res.status(409).send('Користувач з такою поштою вже існує');
+    }
+
+    const user = await User.create({
+      name,
+      email,
+      password_hash: hashString(password).toString(),
+      role: roles.STUDENT,
+      phone: phone || null,
+    });
+
+    await GamificationSettings.create({
+      user_id: user.id,
+      badges_enabled: true,
+      streaks_enabled: true,
+      notifications_enabled: true,
+    });
+
+    const accessToken = jwtLib.sign(
+      { id: user.id, role: user.role },
+      process.env.JWT_SECRET,
+      { expiresIn: '1h' },
+    );
+
+    res.status(201).json({ accessToken });
+  } catch (err) {
+    res.status(400).send(err.message);
+  }
+};
+
 const login = async (req, res) => {
   const { email, password } = req.body;
 
@@ -122,5 +161,6 @@ router.post('/', add);
 router.patch('/:id', ...createAuthMiddleware([roles.ADMIN]), update);
 router.delete('/:id', ...createAuthMiddleware([roles.ADMIN]), remove);
 router.post('/login', login);
+router.post('/register', register);
 
 module.exports = { router };
