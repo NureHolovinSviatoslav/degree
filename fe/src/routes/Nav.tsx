@@ -29,6 +29,18 @@ import { Separator } from "../components/ui/separator";
 
 const NAV_ITEMS = [
   { to: "/", icon: Home, label: "Головна", roles: null },
+  {
+    to: "/my-courses",
+    icon: BookOpen,
+    label: "Мої курси",
+    roles: [UserRole.Student],
+  },
+  {
+    to: "/my-settings",
+    icon: Settings,
+    label: "Налаштування",
+    roles: [UserRole.Student],
+  },
   { to: "/users", icon: Users, label: "Користувачі", roles: [UserRole.Admin] },
   { to: "/courses", icon: BookOpen, label: "Курси", roles: [UserRole.Admin] },
   {
