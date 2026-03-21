@@ -1,5 +1,3 @@
-import { useContext, useMemo, useState } from "react";
-import { Link, useNavigate, useParams } from "react-router-dom";
 import {
   CheckCircle2,
   ChevronLeft,
@@ -7,17 +5,20 @@ import {
   PartyPopper,
   XCircle,
 } from "lucide-react";
+import { useContext, useMemo, useState } from "react";
+import { Link, useNavigate, useParams } from "react-router-dom";
 
 import { CurrentUserContext } from "../App";
+import { useAnswerOptionQuery } from "../features/useAnswerOptionQuery";
 import { useCourseQuery } from "../features/useCourseQuery";
+import { useEnrollmentMutation } from "../features/useEnrollmentMutation";
+import { useEnrollmentQuery } from "../features/useEnrollmentQuery";
+import { useLessonProgressMutation } from "../features/useLessonProgressMutation";
+import { useLessonProgressQuery } from "../features/useLessonProgressQuery";
 import { useLessonQuery } from "../features/useLessonQuery";
 import { useTestQuestionQuery } from "../features/useTestQuestionQuery";
-import { useAnswerOptionQuery } from "../features/useAnswerOptionQuery";
-import { useLessonProgressQuery } from "../features/useLessonProgressQuery";
-import { useLessonProgressMutation } from "../features/useLessonProgressMutation";
-import { useEnrollmentQuery } from "../features/useEnrollmentQuery";
-import { useEnrollmentMutation } from "../features/useEnrollmentMutation";
 
+import Loader from "../components/Loader";
 import { Badge } from "../components/ui/badge";
 import { Button } from "../components/ui/button";
 import {
@@ -29,7 +30,6 @@ import {
 } from "../components/ui/card";
 import { Progress } from "../components/ui/progress";
 import { cn } from "../lib/utils";
-import Loader from "../components/Loader";
 
 type AnswerMap = Record<string, string>;
 
@@ -163,7 +163,7 @@ const LessonTest = () => {
       progressMutation.mutate({
         type: "create",
         data: {
-          id: "",
+          id: undefined as unknown as string,
           user_id: user.id,
           lesson_id: lessonId!,
           is_viewed: true,
@@ -216,7 +216,9 @@ const LessonTest = () => {
       <div className="mx-auto max-w-2xl space-y-6 p-6">
         <Card>
           <CardContent className="flex flex-col items-center py-16">
-            <p className="text-lg font-medium">Тест для цього уроку відсутній</p>
+            <p className="text-lg font-medium">
+              Тест для цього уроку відсутній
+            </p>
             <p className="mt-1 text-sm text-muted-foreground">
               Поверніться до уроку або перейдіть до наступного
             </p>
@@ -229,9 +231,7 @@ const LessonTest = () => {
               </Button>
               {nextLesson && (
                 <Button asChild>
-                  <Link
-                    to={`/my-courses/${courseId}/lessons/${nextLesson.id}`}
-                  >
+                  <Link to={`/my-courses/${courseId}/lessons/${nextLesson.id}`}>
                     Наступний урок
                     <ChevronRight className="ml-1 h-4 w-4" />
                   </Link>
@@ -277,7 +277,8 @@ const LessonTest = () => {
                 </div>
                 <CardTitle className="text-2xl">Чудово!</CardTitle>
                 <CardDescription>
-                  Всі відповіді правильні. Можете переходити до наступного уроку.
+                  Всі відповіді правильні. Можете переходити до наступного
+                  уроку.
                 </CardDescription>
               </>
             ) : (
@@ -285,9 +286,7 @@ const LessonTest = () => {
                 <div className="mx-auto mb-2 flex h-14 w-14 items-center justify-center rounded-full bg-orange-100 dark:bg-orange-900/30">
                   <XCircle className="h-7 w-7 text-orange-600 dark:text-orange-400" />
                 </div>
-                <CardTitle className="text-2xl">
-                  {score}% правильних
-                </CardTitle>
+                <CardTitle className="text-2xl">{score}% правильних</CardTitle>
                 <CardDescription>
                   {correctCount} з {results.length} правильно. Перегляньте
                   помилки нижче та спробуйте ще раз.
@@ -352,9 +351,7 @@ const LessonTest = () => {
             <Button
               size="lg"
               onClick={() =>
-                navigate(
-                  `/my-courses/${courseId}/lessons/${nextLesson.id}`,
-                )
+                navigate(`/my-courses/${courseId}/lessons/${nextLesson.id}`)
               }
             >
               Наступний урок
@@ -444,8 +441,7 @@ const LessonTest = () => {
                   )}
                 >
                   {String.fromCharCode(
-                    65 +
-                      currentOptions.findIndex((o) => o.id === option.id),
+                    65 + currentOptions.findIndex((o) => o.id === option.id),
                   )}
                 </span>
                 {option.option_text}
