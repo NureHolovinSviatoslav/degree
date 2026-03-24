@@ -75,6 +75,31 @@ const NotificationSearch = lazy(() => import("./routes/NotificationSearch"));
 const NotificationDetails = lazy(() => import("./routes/NotificationDetails"));
 const NotificationMutate = lazy(() => import("./routes/NotificationMutate"));
 
+const TeacherCourseSearch = lazy(
+  () => import("./routes/TeacherCourseSearch"),
+);
+const TeacherCourseDetails = lazy(
+  () => import("./routes/TeacherCourseDetails"),
+);
+const TeacherCourseMutate = lazy(
+  () => import("./routes/TeacherCourseMutate"),
+);
+const TeacherLessonDetails = lazy(
+  () => import("./routes/TeacherLessonDetails"),
+);
+const TeacherLessonMutate = lazy(
+  () => import("./routes/TeacherLessonMutate"),
+);
+const TeacherTestQuestionDetails = lazy(
+  () => import("./routes/TeacherTestQuestionDetails"),
+);
+const TeacherTestQuestionMutate = lazy(
+  () => import("./routes/TeacherTestQuestionMutate"),
+);
+const TeacherAnswerOptionMutate = lazy(
+  () => import("./routes/TeacherAnswerOptionMutate"),
+);
+
 const MyCourses = lazy(() => import("./routes/MyCourses"));
 const CourseLesson = lazy(() => import("./routes/CourseLesson"));
 const LessonTest = lazy(() => import("./routes/LessonTest"));
@@ -90,12 +115,21 @@ const queryClient = new QueryClient({
 });
 
 const adminOnly = [UserRole.Admin];
+const teacherOnly = [UserRole.Teacher];
 const studentOnly = [UserRole.Student];
 const noAccess = <>Немає доступу</>;
 
 function AdminRoute({ children }: { children: React.ReactNode }) {
   return (
     <ACLWrapper allowedRoles={adminOnly} fallback={noAccess}>
+      {children}
+    </ACLWrapper>
+  );
+}
+
+function TeacherRoute({ children }: { children: React.ReactNode }) {
+  return (
+    <ACLWrapper allowedRoles={teacherOnly} fallback={noAccess}>
       {children}
     </ACLWrapper>
   );
@@ -148,6 +182,103 @@ const Router = () => {
                   <StudentRoute>
                     <MySettings />
                   </StudentRoute>
+                }
+              />
+
+              <Route
+                path="teacher-courses"
+                element={
+                  <TeacherRoute>
+                    <TeacherCourseSearch />
+                  </TeacherRoute>
+                }
+              />
+              <Route
+                path="teacher-courses/create"
+                element={
+                  <TeacherRoute>
+                    <TeacherCourseMutate />
+                  </TeacherRoute>
+                }
+              />
+              <Route
+                path="teacher-courses/update/:id"
+                element={
+                  <TeacherRoute>
+                    <TeacherCourseMutate />
+                  </TeacherRoute>
+                }
+              />
+              <Route
+                path="teacher-courses/:id"
+                element={
+                  <TeacherRoute>
+                    <TeacherCourseDetails />
+                  </TeacherRoute>
+                }
+              />
+              <Route
+                path="teacher-lessons/create"
+                element={
+                  <TeacherRoute>
+                    <TeacherLessonMutate />
+                  </TeacherRoute>
+                }
+              />
+              <Route
+                path="teacher-lessons/update/:id"
+                element={
+                  <TeacherRoute>
+                    <TeacherLessonMutate />
+                  </TeacherRoute>
+                }
+              />
+              <Route
+                path="teacher-lessons/:id"
+                element={
+                  <TeacherRoute>
+                    <TeacherLessonDetails />
+                  </TeacherRoute>
+                }
+              />
+              <Route
+                path="teacher-questions/create"
+                element={
+                  <TeacherRoute>
+                    <TeacherTestQuestionMutate />
+                  </TeacherRoute>
+                }
+              />
+              <Route
+                path="teacher-questions/update/:id"
+                element={
+                  <TeacherRoute>
+                    <TeacherTestQuestionMutate />
+                  </TeacherRoute>
+                }
+              />
+              <Route
+                path="teacher-questions/:id"
+                element={
+                  <TeacherRoute>
+                    <TeacherTestQuestionDetails />
+                  </TeacherRoute>
+                }
+              />
+              <Route
+                path="teacher-answers/create"
+                element={
+                  <TeacherRoute>
+                    <TeacherAnswerOptionMutate />
+                  </TeacherRoute>
+                }
+              />
+              <Route
+                path="teacher-answers/update/:id"
+                element={
+                  <TeacherRoute>
+                    <TeacherAnswerOptionMutate />
+                  </TeacherRoute>
                 }
               />
 

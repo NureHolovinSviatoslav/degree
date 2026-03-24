@@ -41,6 +41,12 @@ const NAV_ITEMS = [
     label: "Налаштування",
     roles: [UserRole.Student],
   },
+  {
+    to: "/teacher-courses",
+    icon: BookOpen,
+    label: "Мої курси",
+    roles: [UserRole.Teacher],
+  },
   { to: "/users", icon: Users, label: "Користувачі", roles: [UserRole.Admin] },
   { to: "/courses", icon: BookOpen, label: "Курси", roles: [UserRole.Admin] },
   {
