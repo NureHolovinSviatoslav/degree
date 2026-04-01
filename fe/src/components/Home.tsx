@@ -26,6 +26,7 @@ import { useCourseQuery } from "../features/useCourseQuery";
 import { useEnrollmentQuery } from "../features/useEnrollmentQuery";
 import { useLessonProgressQuery } from "../features/useLessonProgressQuery";
 import { useLessonQuery } from "../features/useLessonQuery";
+import { useGamificationSettingsQuery } from "../features/useGamificationSettingsQuery";
 import { useUserBadgeQuery } from "../features/useUserBadgeQuery";
 import { UserRole } from "../types/User";
 
@@ -72,6 +73,7 @@ function StudentHome({ userId, name }: { userId: string; name: string }) {
   const { data: streaks = [] } = useActivityStreakQuery();
   const { data: userBadges = [] } = useUserBadgeQuery();
   const { data: badges = [] } = useBadgeQuery();
+  const { data: gamSettings = [] } = useGamificationSettingsQuery();
 
   const myEnrollments = useMemo(
     () => enrollments.filter((e) => e.user_id === userId),
@@ -96,6 +98,16 @@ function StudentHome({ userId, name }: { userId: string; name: string }) {
       .filter(Boolean);
   }, [userBadges, badges, userId]);
 
+  const mySettings = useMemo(
+    () => gamSettings.find((s) => s.user_id === userId),
+    [gamSettings, userId],
+  );
+  const streaksEnabled = mySettings?.streaks_enabled ?? true;
+  const badgesEnabled = mySettings?.badges_enabled ?? true;
+
+  const inProgressCount = myEnrollments.filter(
+    (e) => e.status === "in_progress",
+  ).length;
   const completedCount = myEnrollments.filter(
     (e) => e.status === "completed",
   ).length;
@@ -121,13 +133,26 @@ function StudentHome({ userId, name }: { userId: string; name: string }) {
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
         <Card>
           <CardHeader>
-            <CardDescription>Записано на курси</CardDescription>
-            <CardTitle className="text-3xl">{myEnrollments.length}</CardTitle>
+            <CardDescription>В процесі</CardDescription>
+            <CardTitle className="text-3xl">{inProgressCount}</CardTitle>
           </CardHeader>
           <CardContent>
             <div className="flex items-center gap-2 text-muted-foreground">
               <BookOpen className="h-4 w-4" />
-              <span className="text-xs">{completedCount} завершено</span>
+              <span className="text-xs">курсів</span>
+            </div>
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardDescription>Завершено</CardDescription>
+            <CardTitle className="text-3xl">{completedCount}</CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="flex items-center gap-2 text-muted-foreground">
+              <GraduationCap className="h-4 w-4" />
+              <span className="text-xs">курсів</span>
             </div>
           </CardContent>
         </Card>
@@ -142,33 +167,37 @@ function StudentHome({ userId, name }: { userId: string; name: string }) {
           </CardContent>
         </Card>
 
-        <Card>
-          <CardHeader>
-            <CardDescription>Серія активності</CardDescription>
-            <CardTitle className="text-3xl">
-              {myStreak?.current_count ?? 0}
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="flex items-center gap-2 text-muted-foreground">
-              <Flame className="h-4 w-4 text-orange-500" />
-              <span className="text-xs">днів поспіль</span>
-            </div>
-          </CardContent>
-        </Card>
+        {streaksEnabled && (
+          <Card>
+            <CardHeader>
+              <CardDescription>Серія активності</CardDescription>
+              <CardTitle className="text-3xl">
+                {myStreak?.current_count ?? 0}
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="flex items-center gap-2 text-muted-foreground">
+                <Flame className="h-4 w-4 text-orange-500" />
+                <span className="text-xs">днів поспіль</span>
+              </div>
+            </CardContent>
+          </Card>
+        )}
 
-        <Card>
-          <CardHeader>
-            <CardDescription>Нагороди</CardDescription>
-            <CardTitle className="text-3xl">{myBadges.length}</CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="flex items-center gap-2 text-muted-foreground">
-              <Trophy className="h-4 w-4 text-yellow-500" />
-              <span className="text-xs">отримано бейджів</span>
-            </div>
-          </CardContent>
-        </Card>
+        {badgesEnabled && (
+          <Card>
+            <CardHeader>
+              <CardDescription>Нагороди</CardDescription>
+              <CardTitle className="text-3xl">{myBadges.length}</CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="flex items-center gap-2 text-muted-foreground">
+                <Trophy className="h-4 w-4 text-yellow-500" />
+                <span className="text-xs">отримано бейджів</span>
+              </div>
+            </CardContent>
+          </Card>
+        )}
       </div>
 
       {myEnrollments.length > 0 && (
@@ -218,7 +247,7 @@ function StudentHome({ userId, name }: { userId: string; name: string }) {
         </Card>
       )}
 
-      {myBadges.length > 0 && (
+      {badgesEnabled && myBadges.length > 0 && (
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
@@ -273,6 +302,21 @@ function TeacherHome({ userId, name }: { userId: string; name: string }) {
             : course.title,
         completion: avg,
         students: courseEnrollments.length,
+      };
+    });
+  }, [myCourses, enrollments]);
+
+  const completionsData = useMemo(() => {
+    return myCourses.map((course) => {
+      const completed = enrollments.filter(
+        (e) => e.course_id === course.id && e.status === "completed",
+      ).length;
+      return {
+        name:
+          course.title.length > 20
+            ? course.title.slice(0, 20) + "…"
+            : course.title,
+        completions: completed,
       };
     });
   }, [myCourses, enrollments]);
@@ -396,6 +440,61 @@ function TeacherHome({ userId, name }: { userId: string; name: string }) {
                   />
                   <Bar dataKey="completion" radius={[6, 6, 0, 0]}>
                     {completionData.map((_, i) => (
+                      <Cell
+                        key={i}
+                        fill={CHART_COLORS[i % CHART_COLORS.length]}
+                      />
+                    ))}
+                  </Bar>
+                </BarChart>
+              </ResponsiveContainer>
+            ) : (
+              <p className="py-8 text-center text-muted-foreground">
+                Немає даних для відображення
+              </p>
+            )}
+          </CardContent>
+        </Card>
+
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <GraduationCap className="h-5 w-5" />
+              Кількість проходжень за курсами
+            </CardTitle>
+            <CardDescription>
+              Скільки студентів повністю завершили кожен курс
+            </CardDescription>
+          </CardHeader>
+          <CardContent>
+            {completionsData.length > 0 ? (
+              <ResponsiveContainer width="100%" height={300}>
+                <BarChart data={completionsData}>
+                  <CartesianGrid
+                    strokeDasharray="3 3"
+                    className="stroke-border"
+                  />
+                  <XAxis
+                    dataKey="name"
+                    tick={{ fontSize: 12 }}
+                    className="fill-muted-foreground"
+                  />
+                  <YAxis
+                    tick={{ fontSize: 12 }}
+                    className="fill-muted-foreground"
+                    allowDecimals={false}
+                  />
+                  <Tooltip
+                    contentStyle={{
+                      borderRadius: "0.5rem",
+                      border: "1px solid var(--border)",
+                      background: "var(--card)",
+                      color: "var(--card-foreground)",
+                    }}
+                    formatter={(value) => [value, "Проходжень"]}
+                  />
+                  <Bar dataKey="completions" radius={[6, 6, 0, 0]}>
+                    {completionsData.map((_, i) => (
                       <Cell
                         key={i}
                         fill={CHART_COLORS[i % CHART_COLORS.length]}
